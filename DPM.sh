@@ -6,11 +6,11 @@ CC_WRAPPER_PATH="CC_wrapper.sh"
 
 source $CC_WRAPPER_PATH
 
-time=12
+time=18
 account=def-chdesa
 
 declare -a StringArray=(
-"python ddpm_solution.py"
+"python Diffusion_exp.py"
 
 )
 
