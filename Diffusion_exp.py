@@ -83,7 +83,7 @@ for epoch in range(epochs):
                         t = torch.randint(1, R_t, (batch_size,), device=x.device).long()
                         img_noisy = q_sample(x, t)
                         with torch.no_grad():
-                            img_0 = test_sample_loop(model, img_noisy, t)
+                            img_0 = test_sample_loop(model, img_noisy, R_t)
                         test_samples = (torch.Tensor(img_0[-1]) + 1.) * 0.5
                         save_image(test_samples, f'./results/samples_{epoch}_{batch_id}_{R_t}.png')
                 batch_id = batch_id + 1
