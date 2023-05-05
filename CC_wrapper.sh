@@ -7,7 +7,7 @@ CC_wrapper(){
     command=$3
     mem=$4
     module load python/3.8
-    source $HOME/scratch/RL_Assignment2/myenv/bin/activate
+    source $HOME/scratch/RL_Assignment3/myvenv/bin/activate
     module load scipy-stack
 	module load cmake
     echo ${command} > tmp.sh
