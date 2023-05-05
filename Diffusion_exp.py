@@ -1,5 +1,4 @@
 import torch
-from pygments.formatters import img
 from tqdm.auto import tqdm
 from torch.optim import Adam
 from pathlib import Path
@@ -9,7 +8,7 @@ from torchvision.utils import save_image
 import time
 
 
-fix_experiment_seed(seed=1)
+fix_experiment_seed(seed=123)
 
 results_folder = Path("./results")
 results_folder.mkdir(exist_ok = True)
@@ -49,7 +48,7 @@ for epoch in range(epochs):
             batch_size = imgs.shape[0]
             x = imgs.to(device)
 
-            t = t_sample(T, batch_size)  # Randomly sample timesteps uniformly from [0, T-1]
+            t = t_sample(T, batch_size).to(device)  # Randomly sample timesteps uniformly from [0, T-1]
 
             loss = p_losses(model, x, t)
 
