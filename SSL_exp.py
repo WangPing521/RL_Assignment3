@@ -30,8 +30,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # general
 seed = 2022
 num_workers = 2
-save_path = Path("./results_ssl")
-save_path.mkdir(exist_ok = True)
+save_path1 = Path("./results_ssl")
+save_path1.mkdir(exist_ok = True)
+save_path = "./results_ssl"
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
 epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
