@@ -17,6 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from q3_solution  import SimSiam
 from q3_misc import TwoCropsTransform, load_checkpoints, load_pretrained_checkpoints
+from utils.func_tool import save_logs
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -27,7 +28,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # general
 seed = 2022
 num_workers = 2
-save_path = './'
+save_path = './results_ssl'
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
 epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
@@ -231,7 +232,7 @@ for epoch in range(start_epoch, epochs):
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }, is_best=False, filename=save_path + '/checkpoint_{:04d}.pth.tar'.format(epoch))
-
+save_logs(logger, "results_ssl/log_new", str(1))
 # linear eval
 print("=> creating model '{}'".format(arch))
 model = models.__dict__[arch]()
