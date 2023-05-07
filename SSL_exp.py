@@ -202,7 +202,10 @@ def adjust_learning_rate(optimizer, init_lr, epoch, epochs):
         else:
             param_group['lr'] = cur_lr
 
-
+logger = dict()
+logger['train_loss'] = [0]
+logger['train_knn'] = [0]
+logger['test_knn'] = [0]
 # train loop
 for epoch in range(start_epoch, epochs):
 
@@ -210,11 +213,15 @@ for epoch in range(start_epoch, epochs):
 
     # train for one epoch
     losses = train(train_loader, model, optimizer, device)
+    logger['train_loss'].append(np.array(losses).mean() + logger['train_loss'][-1])
     print('Train Epoch: [{}/{}] Train Loss:{:.5f}'.format(epoch, epochs, np.array(losses).mean()))
-
+    acc_trainknn = test(model.encoder, memory_loader, train_loader, device, knn_k, knn_t)
+    logger['train_knn'].append(np.array(acc_trainknn).mean() + logger['train_knn'][-1])
+    print('Train Epoch: [{}/{}] knn_Acc@1: {:.2f}%'.format(epoch, epochs, acc_trainknn))
     # test every 10 epochs
     if epoch != 0 and epoch % 10 == 0:
         acc1 = test(model.encoder, memory_loader, test_loader, device, knn_k, knn_t)
+        logger['test_knn'].append(np.array(acc1).mean() + logger['test_knn'][-1])
         print('Test Epoch: [{}/{}] knn_Acc@1: {:.2f}%'.format(epoch, epochs, acc1))
 
     # save a checkpoint every 20 epochs

@@ -58,33 +58,33 @@ for epoch in range(epochs):
             tepoch.set_postfix(loss=loss.item())
 
     freq_time = time.time() - start_time
-    logger['train_time'].append(freq_time + logger['train_time'][-1])
+    logger['train_time'].append(freq_time)
 
     # Sample and Save Generated Images
-    save_image((x + 1.) * 0.5, './results/orig.png')
-    samples = sample(model, image_size=image_size, batch_size=64, channels=input_channels)
-    samples = (torch.Tensor(samples[-1]) + 1.) * 0.5
-    save_image(samples, f'./results/samples_{epoch}.png')
-    T_reverse = [50, 100, 200, 300, 500]
-    if epoch % 20 == 0 or epoch == epochs - 1:
-        with tqdm(test_loader, unit="batch", leave=False) as tepoch:
-            batch_id = 0
-            for batch in tepoch:
-                tepoch.set_description(f"Test_Epoch: {epoch}")
-
-                imgs, _ = batch
-                batch_size = imgs.shape[0]
-                x = imgs.to(device)
-
-                if batch_id == 0:
-                    save_image((x + 1.) * 0.5, f'./results/orig_{epoch}_{batch_id}.png')
-
-                    for R_t in T_reverse:
-                        t = torch.randint(1, R_t, (batch_size,), device=x.device).long()
-                        img_noisy = q_sample(x, t)
-                        with torch.no_grad():
-                            img_0 = test_sample_loop(model, img_noisy, R_t)
-                        test_samples = (torch.Tensor(img_0[-1]) + 1.) * 0.5
-                        save_image(test_samples, f'./results/samples_{epoch}_{batch_id}_{R_t}.png')
-                batch_id = batch_id + 1
+    # save_image((x + 1.) * 0.5, './results/orig.png')
+    # samples = sample(model, image_size=image_size, batch_size=64, channels=input_channels)
+    # samples = (torch.Tensor(samples[-1]) + 1.) * 0.5
+    # save_image(samples, f'./results/samples_{epoch}.png')
+    # T_reverse = [50, 100, 200, 300, 500]
+    # if epoch % 20 == 0 or epoch == epochs - 1:
+    #     with tqdm(test_loader, unit="batch", leave=False) as tepoch:
+    #         batch_id = 0
+    #         for batch in tepoch:
+    #             tepoch.set_description(f"Test_Epoch: {epoch}")
+    #
+    #             imgs, _ = batch
+    #             batch_size = imgs.shape[0]
+    #             x = imgs.to(device)
+    #
+    #             if batch_id == 0:
+    #                 save_image((x + 1.) * 0.5, f'./results/orig_{epoch}_{batch_id}.png')
+    #
+    #                 for R_t in T_reverse:
+    #                     t = torch.randint(1, R_t, (batch_size,), device=x.device).long()
+    #                     img_noisy = q_sample(x, t)
+    #                     with torch.no_grad():
+    #                         img_0 = test_sample_loop(model, img_noisy, R_t)
+    #                     test_samples = (torch.Tensor(img_0[-1]) + 1.) * 0.5
+    #                     save_image(test_samples, f'./results/samples_{epoch}_{batch_id}_{R_t}.png')
+    #             batch_id = batch_id + 1
 save_logs(logger, "results/log_new", str(1))

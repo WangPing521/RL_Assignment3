@@ -26,7 +26,7 @@ def fix_experiment_seed(seed=0):
 
 fix_experiment_seed()
 
-results_folder = Path("./results")
+results_folder = Path("./results_vae")
 results_folder.mkdir(exist_ok = True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -72,7 +72,7 @@ def visualize():
   train_dataloader, _ = get_dataloaders(data_root=data_root, batch_size=train_batch_size)
   imgs, labels = next(iter(train_dataloader))
 
-  save_image((imgs + 1.) * 0.5, './results/orig.png')
+  save_image((imgs + 1.) * 0.5, './results_vae/orig.png')
   show_image((imgs + 1.) * 0.5)
 
 if __name__ == '__main__':
@@ -267,13 +267,17 @@ class VAE(nn.Module):
 
         log_likelihood = torch.zeros(x.shape[0], K).to(self.device)
         for i in range(K):
-            z = prior.sample()  # WRITE CODE HERE (sample from q_phi)
+            z = posterior.sample()  # WRITE CODE HERE (sample from q_phi)
             recon = self.decode(z)  # WRITE CODE HERE (decode to conditional distribution)
-            log_likelihood[:, i] = recon.nll(recon.sample())# WRITE CODE HERE (log of the summation terms in approximate log-likelihood, that is, log p_\theta(x, z_i) - log q_\phi(z_i | x))
+
+            p_z = -prior.nll(z, dims=[1])
+            p_x_z = -recon.nll(x)
+            p_theta_x_z = p_x_z + p_z
+            q_phi = -posterior.nll(z, dims=[1])
+            log_likelihood[:, i] = (p_theta_x_z - q_phi)# WRITE CODE HERE (log of the summation terms in approximate log-likelihood, that is, log p_\theta(x, z_i) - log q_\phi(z_i | x))
 
             del z, recon
-
-        ll = log_likelihood.mean(dim=1) + torch.log(torch.Tensor([1 / K]).to(device)) # WRITE CODE HERE (compute the final log-likelihood using the log-sum-exp trick)
+        ll = torch.logsumexp(log_likelihood, dim=1) + torch.log(torch.tensor([1.0 / K])) # WRITE CODE HERE (compute the final log-likelihood using the log-sum-exp trick)
         return ll
 
     def forward(self, x):
@@ -338,9 +342,9 @@ if __name__ == '__main__':
           tepoch.set_postfix(loss=loss.item())
 
       samples = model.sample(batch_size=64)
-      save_image((x + 1.) * 0.5, './results/orig.png')
-      save_image((recon + 1.) * 0.5, './results/recon.png')
-      save_image((samples + 1.) * 0.5, f'./results/samples_{epoch}.png')
+      save_image((x + 1.) * 0.5, './results_vae/orig.png')
+      save_image((recon + 1.) * 0.5, './results_vae/recon.png')
+      save_image((samples + 1.) * 0.5, f'./results_vae/samples_{epoch}.png')
 
     show_image(((samples + 1.) * 0.5).clamp(0., 1.))
 
