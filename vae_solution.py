@@ -1,4 +1,6 @@
 import random
+import time
+
 import numpy as np
 from tqdm.auto import tqdm
 
@@ -34,7 +36,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 train_batch_size = 64   # Batch Size
 z_dim = 32        # Latent Dimensionality
 lr = 1e-4         # Learning Rate
-epochs = 30
+epochs = 100
 
 # Define Dataset Statistics
 image_size = 32
@@ -308,7 +310,8 @@ if __name__ == '__main__':
   optimizer = Adam(model.parameters(), lr=lr)
 #
 
-
+logger = dict()
+logger['train_time'] = [0]
 if __name__ == '__main__':
     model = VAE(in_channels=input_channels,
                 input_size=image_size,
@@ -320,51 +323,70 @@ if __name__ == '__main__':
     model.to(device)
     optimizer = Adam(model.parameters(), lr=lr)
 
-    train_dataloader, _ = get_dataloaders(data_root, batch_size=train_batch_size)
+    train_dataloader, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
     for epoch in range(epochs):
-      with tqdm(train_dataloader, unit="batch", leave=False) as tepoch:
-        model.train()
-        for batch in tepoch:
-          tepoch.set_description(f"Epoch: {epoch}")
+        start_time = time.time()
+        with tqdm(train_dataloader, unit="batch", leave=False) as tepoch:
+            model.train()
+            for batch in tepoch:
+              tepoch.set_description(f"Epoch: {epoch}")
 
-          optimizer.zero_grad()
+              optimizer.zero_grad()
 
-          imgs, _ = batch
-          batch_size = imgs.shape[0]
-          x = imgs.to(device)
+              imgs, _ = batch
+              batch_size = imgs.shape[0]
+              x = imgs.to(device)
 
-          recon, nll, kl = model(x)
-          loss = (nll + kl).mean()
+              recon, nll, kl = model(x)
+              loss = (nll + kl).mean()
 
-          loss.backward()
-          optimizer.step()
+              loss.backward()
+              optimizer.step()
 
-          tepoch.set_postfix(loss=loss.item())
+              tepoch.set_postfix(loss=loss.item())
+        freq_time = time.time() - start_time
+        logger['train_time'].append(freq_time)
 
-      samples = model.sample(batch_size=64)
-      save_image((x + 1.) * 0.5, './results_vae/orig.png')
-      save_image((recon + 1.) * 0.5, './results_vae/recon.png')
-      save_image((samples + 1.) * 0.5, f'./results_vae/samples_{epoch}.png')
+        samples = model.sample(batch_size=64)
+        save_image((x + 1.) * 0.5, './results_vae/orig.png')
+        save_image((recon + 1.) * 0.5, './results_vae/recon.png')
+        save_image((samples + 1.) * 0.5, f'./results_vae/samples_{epoch}.png')
 
-    show_image(((samples + 1.) * 0.5).clamp(0., 1.))
+        if epoch % 5 == 0:
+            with torch.no_grad():
+                with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
+                    model.eval()
+                    log_likelihood = 0.
+                    num_samples = 0.
+                    for batch in tepoch:
+                        tepoch.set_description(f"Epoch: {epoch}")
+                        imgs, _ = batch
+                        batch_size = imgs.shape[0]
+                        x = imgs.to(device)
+                        recon, nll, kl = model(x)
+
+                        save_image((x + 1.) * 0.5, './results_vae/testorig.png')
+                        save_image((recon + 1.) * 0.5, './results_vae/testrecon.png')
+                        save_image((samples + 1.) * 0.5, f'./results_vae/testsamples_{epoch}.png')
+
+        # show_image(((samples + 1.) * 0.5).clamp(0., 1.))
 
 
 if __name__ == '__main__':
   _, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
   with torch.no_grad():
-    with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
-      model.eval()
-      log_likelihood = 0.
-      num_samples = 0.
-      for batch in tepoch:
-        tepoch.set_description(f"Epoch: {epoch}")
-        imgs,_ = batch
-        batch_size = imgs.shape[0]
-        x = imgs.to(device)
-
-        log_likelihood += model.log_likelihood(x).sum()
-        num_samples += batch_size
-        tepoch.set_postfix(log_likelihood=log_likelihood / num_samples)
+      with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
+          model.eval()
+          log_likelihood = 0.
+          num_samples = 0.
+          for batch in tepoch:
+              tepoch.set_description(f"Epoch: {epoch}")
+              imgs,_ = batch
+              batch_size = imgs.shape[0]
+              x = imgs.to(device)
+              log_likelihood += model.log_likelihood(x).sum()
+              num_samples += batch_size
+              tepoch.set_postfix(log_likelihood=log_likelihood / num_samples)
 
 def interpolate(model, z_1, z_2, n_samples):
   # Interpolate between z_1 and z_2 with n_samples number of points, with the first point being z_1 and last being z_2.
