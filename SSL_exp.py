@@ -30,7 +30,7 @@ num_workers = 2
 save_path = './'
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
-epochs = 200 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
+epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
 
 # data
 dir ='./data'
@@ -206,6 +206,7 @@ logger = dict()
 logger['train_loss'] = [0]
 logger['train_knn'] = [0]
 logger['test_knn'] = [0]
+
 # train loop
 for epoch in range(start_epoch, epochs):
 
@@ -213,19 +214,17 @@ for epoch in range(start_epoch, epochs):
 
     # train for one epoch
     losses = train(train_loader, model, optimizer, device)
-    logger['train_loss'].append(np.array(losses).mean() + logger['train_loss'][-1])
     print('Train Epoch: [{}/{}] Train Loss:{:.5f}'.format(epoch, epochs, np.array(losses).mean()))
-    acc_trainknn = test(model.encoder, memory_loader, train_loader, device, knn_k, knn_t)
-    logger['train_knn'].append(np.array(acc_trainknn).mean() + logger['train_knn'][-1])
-    print('Train Epoch: [{}/{}] knn_Acc@1: {:.2f}%'.format(epoch, epochs, acc_trainknn))
+    logger['train_loss'].append(np.array(losses).mean())
+
     # test every 10 epochs
-    if epoch != 0 and epoch % 10 == 0:
+    if epoch % 1 == 0:
         acc1 = test(model.encoder, memory_loader, test_loader, device, knn_k, knn_t)
-        logger['test_knn'].append(np.array(acc1).mean() + logger['test_knn'][-1])
         print('Test Epoch: [{}/{}] knn_Acc@1: {:.2f}%'.format(epoch, epochs, acc1))
+        logger['test_knn'].append(np.array(acc1).mean())
 
     # save a checkpoint every 20 epochs
-    if epoch != 0 and epoch % 20 == 0:
+    if epoch % 20 == 0 or epoch == epochs-1:
         save_checkpoint({
             'epoch': epoch + 1,
             'arch': arch,
