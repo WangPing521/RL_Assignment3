@@ -221,6 +221,8 @@ for epoch in range(start_epoch, epochs):
     losses = train(train_loader, model, optimizer, device)
     print('Train Epoch: [{}/{}] Train Loss:{:.5f}'.format(epoch, epochs, np.array(losses).mean()))
     logger['train_loss'].append(np.array(losses).mean())
+    train_knn_acc = test(model.encoder, memory_loader, train_loader, device, knn_k, knn_t)
+    logger['train_knn'].append(np.array(train_knn_acc).mean())
 
     # test every 10 epochs
     if epoch % 1 == 0:
