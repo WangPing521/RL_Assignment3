@@ -30,9 +30,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # general
 seed = 2022
 num_workers = 2
-save_path1 = Path("./results_ssl_stop_Grad_nomlp")
+save_path1 = Path("./stopGrad_HighD")
 save_path1.mkdir(exist_ok = True)
-save_path = "./results_ssl_stop_Grad_nomlp"
+save_path = "./stopGrad_HighD"
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
 epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
@@ -46,12 +46,12 @@ arch = "resnet18"
 fix_pred_lr = True # fix the learning rate of the predictor network
 
 #Simsiam params
-dim=2048 # 2048 | 4096
+dim=4096 # 2048 | 4096
 pred_dim=512
 
 # ablation experiments
 stop_gradient=True # (True or False)
-MLP_mode ='no_pred_mlp' # None|'no_pred_mlp'|'fixed_random_init'
+MLP_mode =None # None|'no_pred_mlp'|'fixed_random_init'
 
 # optimizer
 lr = 0.03
@@ -236,7 +236,7 @@ for epoch in range(start_epoch, epochs):
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }, is_best=False, filename=save_path + '/checkpoint_{:04d}.pth.tar'.format(epoch))
-save_logs(logger, "results_ssl_stop_Grad_nomlp/log_new", str(1))
+save_logs(logger, "stopGrad_HighD/log_new", str(1))
 # linear eval
 print("=> creating model '{}'".format(arch))
 model = models.__dict__[arch]()
@@ -252,7 +252,7 @@ model.fc.bias.data.zero_()
 print(model)
 
 # load the pre-trained model from previous steps
-pretrained = './results_ssl_stop_Grad_nomlp/checkpoint_0099.pth.tar'
+pretrained = './stopGrad_HighD/checkpoint_0099.pth.tar'
 if pretrained:
     model, optimizer, start_epoch = load_pretrained_checkpoints(os.path.join(pretrained),model,optimizer,device)
 if device is not None:
@@ -430,7 +430,7 @@ for epoch in range(start_epoch, epochs):
     print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2).mean() ))
     logger_c['val_top1'].append(np.array(acc2).mean())
 
-save_logs(logger_c, "results_ssl_stop_Grad_nomlp/log_new_c", str(1))
+save_logs(logger_c, "stopGrad_HighD/log_new_c", str(1))
 
 
 
