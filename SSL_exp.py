@@ -108,6 +108,9 @@ test_transform = transforms.Compose([
 train_data = datasets.CIFAR10(root=dir, train=True, transform=TwoCropsTransform(transforms.Compose(train_transform)), download=True)
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, drop_last=True)
 
+trainGT_data = datasets.CIFAR10(root=dir, train=True, transform=test_transform, download=True)
+trainGT_loader = DataLoader(trainGT_data, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+
 memory_data = datasets.CIFAR10(root=dir, train=True, transform=test_transform, download=True)
 memory_loader = DataLoader(memory_data, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
@@ -221,7 +224,7 @@ for epoch in range(start_epoch, epochs):
     losses = train(train_loader, model, optimizer, device)
     print('Train Epoch: [{}/{}] Train Loss:{:.5f}'.format(epoch, epochs, np.array(losses).mean()))
     logger['train_loss'].append(np.array(losses).mean())
-    train_knn_acc = test(model.encoder, memory_loader, train_loader, device, knn_k, knn_t)
+    train_knn_acc = test(model.encoder, memory_loader, trainGT_loader, device, knn_k, knn_t)
     logger['train_knn'].append(np.array(train_knn_acc).mean())
 
     # test every 10 epochs
