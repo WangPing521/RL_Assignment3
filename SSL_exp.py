@@ -32,7 +32,7 @@ seed = 2022
 num_workers = 2
 save_path1 = Path("./results_ssl_withoutGrad")
 save_path1.mkdir(exist_ok = True)
-save_path = "./results_ssl_withoutGrad"
+save_path = "./results_ssl_stop_Grad_nomlp"
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
 epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
@@ -50,8 +50,8 @@ dim=2048
 pred_dim=512
 
 # ablation experiments
-stop_gradient=False # (True or False)
-MLP_mode=None # None|'no_pred_mlp'
+stop_gradient=True # (True or False)
+MLP_mode='no_pred_mlp' # None|'no_pred_mlp'|'fixed_random_init'
 
 # optimizer
 lr = 0.03
@@ -241,7 +241,7 @@ for epoch in range(start_epoch, epochs):
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }, is_best=False, filename=save_path + '/checkpoint_{:04d}.pth.tar'.format(epoch))
-save_logs(logger, "results_ssl_withoutGrad/log_new", str(1))
+save_logs(logger, "results_ssl_stop_Grad_nomlp/log_new", str(1))
 # linear eval
 print("=> creating model '{}'".format(arch))
 model = models.__dict__[arch]()
@@ -257,7 +257,7 @@ model.fc.bias.data.zero_()
 print(model)
 
 # load the pre-trained model from previous steps
-pretrained = './results_ssl_withoutGrad/checkpoint_0099.pth.tar'
+pretrained = './results_ssl_stop_Grad_nomlp/checkpoint_0099.pth.tar'
 if pretrained:
     model, optimizer, start_epoch = load_pretrained_checkpoints(os.path.join(pretrained),model,optimizer,device)
 if device is not None:
@@ -435,7 +435,7 @@ for epoch in range(start_epoch, epochs):
     print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2).mean() ))
     logger_c['val_top1'].append(np.array(acc2).mean())
 
-save_logs(logger_c, "results_ssl_withoutGrad/log_new_c", str(1))
+save_logs(logger_c, "results_ssl_stop_Grad_nomlp/log_new_c", str(1))
 
 
 
