@@ -334,14 +334,14 @@ def train(train_loader, model, criterion, optimizer, device):
         # measure accuracy and record loss
         acc1, acc5 = accuracy(output, target, topk=(1, 5))
         losses.append(loss.item())
-        top1.append(acc1[0].cpu())
-        top5.append(acc5[0].cpu())
+        top1.append(float(acc1[0].cpu()))
+        top5.append(float(acc5[0].cpu()))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    return top1
+    return top1, top5
 
 # validation
 def validate(val_loader, model, criterion, device):
@@ -365,10 +365,10 @@ def validate(val_loader, model, criterion, device):
             # measure accuracy and record loss
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
             losses.append(loss.item())
-            top1.append(acc1[0].cpu())
-            top5.append(acc5[0].cpu())
+            top1.append(float(acc1[0].cpu()))
+            top5.append(float(acc5[0].cpu()))
 
-    return top1
+    return top1, top5
 
 
 def sanity_check(state_dict, pretrained_weights):
@@ -416,19 +416,23 @@ def accuracy(output, target, topk=(1,)):
 logger_c = dict()
 logger_c['train_top1'] = [0]
 logger_c['val_top1'] = [0]
+logger_c['train_top5'] = [0]
+logger_c['val_top5'] = [0]
 for epoch in range(start_epoch, epochs):
 
     adjust_learning_rate(optimizer, init_lr, epoch, epochs)
 
     # train for one epoch
-    acc1 = train(train_loader, model, criterion, optimizer,device)
-    print('Train Epoch: [{}/{}] Train acc1:{:.2f}%'.format(epoch, epochs,np.array(acc1).mean() ))
-    logger_c['train_top1'].append(np.array(acc1).mean())
+    acc1_1, acc1_5 = train(train_loader, model, criterion, optimizer,device)
+    print('Train Epoch: [{}/{}] Train acc1:{:.2f}%'.format(epoch, epochs,np.array(acc1_1).mean() ))
+    logger_c['train_top1'].append(np.array(acc1_1).mean())
+    logger_c['train_top5'].append(np.array(acc1_5).mean())
 
     # evaluate on validation set
-    acc2 = validate(val_loader, model, criterion, device)
-    print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2).mean() ))
-    logger_c['val_top1'].append(np.array(acc2).mean())
+    acc2_1, acc2_5 = validate(val_loader, model, criterion, device)
+    print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2_1).mean() ))
+    logger_c['val_top1'].append(np.array(acc2_1).mean())
+    logger_c['val_top5'].append(np.array(acc2_5).mean())
 
 save_logs(logger_c, "stopGrad_HighD/log_new_c", str(1))
 
