@@ -392,21 +392,24 @@ if __name__ == '__main__':
               tepoch.set_postfix(log_likelihood=log_likelihood / num_samples)
 
 def interpolate(model, z_1, z_2, n_samples):
-  # Interpolate between z_1 and z_2 with n_samples number of points, with the first point being z_1 and last being z_2.
-  # Inputs:
-  #   z_1: The first point in the latent space
-  #   z_2: The second point in the latent space
-  #   n_samples: Number of points interpolated
-  # Returns:
-  #   sample: The mode of the distribution obtained by decoding each point in the latent space
-  #           Should be of size (n_samples, 3, 32, 32)
-  lengths = torch.linspace(0., 1., n_samples).unsqueeze(1).to(device)
-  z = torch.stack([z_2 + (z_1 - z_2) * t for t in lengths])    # WRITE CODE HERE (interpolate z_1 to z_2 with n_samples points)
-  return model.decode(z).mode()
+
+    # Interpolate between z_1 and z_2 with n_samples number of points, with the first point being z_1 and last being z_2.
+    # Inputs:
+    #   z_1: The first point in the latent space
+    #   z_2: The second point in the latent space
+    #   n_samples: Number of points interpolated
+    # Returns:
+    #   sample: The mode of the distribution obtained by decoding each point in the latent space
+    #           Should be of size (n_samples, 3, 32, 32)
+    lengths = torch.linspace(0., 1., n_samples).unsqueeze(1).to(device)
+    z = torch.stack([z_2 + (z_1 - z_2) * t for t in lengths])    # WRITE CODE HERE (interpolate z_1 to z_2 with n_samples points)
+    return model.decode(z).mode()
 
 if __name__ == '__main__':
-  z_1 = torch.randn(1, z_dim).to(device)
-  z_2 = torch.randn(1, z_dim).to(device)
+    z_1 = torch.randn(1, z_dim).to(device)
+    z_2 = torch.randn(1, z_dim).to(device)
 
-  interp = interpolate(model, z_1, z_2, 10)
-  show_image((interp + 1.) * 0.5, nrow=10)
+    interp = interpolate(model, z_1, z_2, 10)
+    # show_image((interp + 1.) * 0.5, nrow=10)
+    save_image((interp + 1.) * 0.5, './results_vae/interpolate.png')
+

@@ -30,9 +30,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # general
 seed = 2022
 num_workers = 2
-save_path1 = Path("./results_ssl")
+save_path1 = Path("./results_ssl_withGrad")
 save_path1.mkdir(exist_ok = True)
-save_path = "./results_ssl"
+save_path = "./results_ssl_withGrad"
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
 start_epoch = 0
 epochs = 100 # Number of epoches (for this question 200 is enough, however for 1000 epoches, you will get closer results to the original paper)
@@ -69,7 +69,7 @@ cudnn.deterministic = True
 
 # Simsiam Model
 print("=> creating model '{}'".format(arch))
-model = SimSiam(models.__dict__[arch], dim, pred_dim, stop_gradient=True, MLP_mode=None)
+model = SimSiam(models.__dict__[arch], dim, pred_dim, stop_gradient=stop_gradient, MLP_mode=MLP_mode)
 # print(model)
 
 model.to(device)
@@ -236,7 +236,7 @@ for epoch in range(start_epoch, epochs):
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }, is_best=False, filename=save_path + '/checkpoint_{:04d}.pth.tar'.format(epoch))
-save_logs(logger, "results_ssl/log_new", str(1))
+save_logs(logger, "results_ssl_withGrad/log_new", str(1))
 # linear eval
 print("=> creating model '{}'".format(arch))
 model = models.__dict__[arch]()
@@ -252,7 +252,7 @@ model.fc.bias.data.zero_()
 print(model)
 
 # load the pre-trained model from previous steps
-pretrained = './checkpoint_0001.pth.tar'
+pretrained = './results_ssl_withGrad/checkpoint_0099.pth.tar'
 if pretrained:
     model, optimizer, start_epoch = load_pretrained_checkpoints(os.path.join(pretrained),model,optimizer,device)
 if device is not None:
@@ -412,6 +412,10 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 # train for the classififcation task
+
+logger_c = dict()
+logger_c['train_top1'] = [0]
+logger_c['val_top1'] = [0]
 for epoch in range(start_epoch, epochs):
 
     adjust_learning_rate(optimizer, init_lr, epoch, epochs)
@@ -419,10 +423,14 @@ for epoch in range(start_epoch, epochs):
     # train for one epoch
     acc1 = train(train_loader, model, criterion, optimizer,device)
     print('Train Epoch: [{}/{}] Train acc1:{:.2f}%'.format(epoch, epochs,np.array(acc1).mean() ))
+    logger_c['train_top1'].append(np.array(acc1).mean())
 
     # evaluate on validation set
-    acc1 = validate(val_loader, model, criterion, device)
-    print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc1).mean() ))
+    acc2 = validate(val_loader, model, criterion, device)
+    print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2).mean() ))
+    logger_c['val_top1'].append(np.array(acc2).mean())
+
+save_logs(logger, "results_ssl_withGrad/log_new_c", str(1))
 
 
 
