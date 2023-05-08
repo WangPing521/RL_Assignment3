@@ -80,9 +80,62 @@ def visualize():
   save_image((imgs + 1.) * 0.5, './results_vae/orig.png')
   show_image((imgs + 1.) * 0.5)
 
-if __name__ == '__main__':
-  visualize()
+# if __name__ == '__main__':
+#   visualize()
 
+def average_list(input_list):
+    return sum(input_list) / len(input_list)
+
+def save_bar(input, i):
+    ff = []
+    [ff.append(i) for i in range(32)]
+    values = input
+    fig = plt.figure(figsize=(10, 5))
+    plt.bar(ff, values.detach().cpu(), color='blue', width=0.6)
+    plt.xlabel("Features")
+    plt.ylabel("Values")
+    plt.title(f"Distribution {i}")
+    save_path = Path('results_vae', f"No_{i}")
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(save_path))
+    del fig
+
+
+def bar_plot_class(dataloader, model):
+    with tqdm(dataloader, unit="batch", leave=False) as tepoch:
+        model.eval()
+        for batch in tepoch:
+            tepoch.set_description(f"Epoch: {epoch}")
+            imgs, label = batch
+            x = imgs.to(device)
+
+            recon, nll, kl, latent_z = model(x)
+            C0, C1, C2, C3, C4, C5, C6, C7, C8, C9 = [], [], [], [], [], [], [], [], [], []
+            [C0.append(latent_z[idx]) for idx in torch.where(label==0)[0]]
+            [C1.append(latent_z[idx]) for idx in torch.where(label==1)[0]]
+            [C2.append(latent_z[idx]) for idx in torch.where(label==2)[0]]
+            [C3.append(latent_z[idx]) for idx in torch.where(label==3)[0]]
+            [C4.append(latent_z[idx]) for idx in torch.where(label==4)[0]]
+            [C5.append(latent_z[idx]) for idx in torch.where(label==5)[0]]
+            [C6.append(latent_z[idx]) for idx in torch.where(label==6)[0]]
+            [C7.append(latent_z[idx]) for idx in torch.where(label==7)[0]]
+            [C8.append(latent_z[idx]) for idx in torch.where(label==8)[0]]
+            [C9.append(latent_z[idx]) for idx in torch.where(label==9)[0]]
+            avg_0 = average_list(C0)
+            avg_1 = average_list(C1)
+            avg_2 = average_list(C2)
+            avg_3 = average_list(C3)
+            avg_4 = average_list(C4)
+            avg_5 = average_list(C5)
+            avg_6 = average_list(C6)
+            avg_7 = average_list(C7)
+            avg_8 = average_list(C8)
+            avg_9 = average_list(C9)
+            avg = [avg_0, avg_1, avg_2, avg_3, avg_4, avg_5, avg_6, avg_7, avg_8, avg_9]
+            i = 0
+            for c_avg in avg:
+                save_bar(c_avg, i)
+                i = i + 1
 
 class Encoder(nn.Module):
   def __init__(self, nc, nef, nz, isize, device):
@@ -299,7 +352,7 @@ class VAE(nn.Module):
         latent_z = posterior.sample()  # WRITE CODE HERE (sample a z)
         recon = self.decode(latent_z)  # WRITE CODE HERE (decode)
 
-        return recon.mode(), recon.nll(x), posterior.kl()
+        return recon.mode(), recon.nll(x), posterior.kl(), latent_z
 
 if __name__ == '__main__':
   model = VAE(in_channels=input_channels,
@@ -313,8 +366,8 @@ if __name__ == '__main__':
   optimizer = Adam(model.parameters(), lr=lr)
 #
 
-logger = dict()
-logger['train_time'] = [0]
+# logger = dict()
+# logger['train_time'] = [0]
 if __name__ == '__main__':
     model = VAE(in_channels=input_channels,
                 input_size=image_size,
@@ -328,7 +381,7 @@ if __name__ == '__main__':
 
     train_dataloader, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
     for epoch in range(epochs):
-        start_time = time.time()
+        # start_time = time.time()
         with tqdm(train_dataloader, unit="batch", leave=False) as tepoch:
             model.train()
             for batch in tepoch:
@@ -336,19 +389,26 @@ if __name__ == '__main__':
 
               optimizer.zero_grad()
 
-              imgs, _ = batch
+              imgs, label = batch
               batch_size = imgs.shape[0]
               x = imgs.to(device)
 
-              recon, nll, kl = model(x)
+              recon, nll, kl, latent_z = model(x)
               loss = (nll + kl).mean()
 
               loss.backward()
               optimizer.step()
 
               tepoch.set_postfix(loss=loss.item())
-        freq_time = time.time() - start_time
-        logger['train_time'].append(freq_time)
+    train_batch_size = 128
+    bar_plot_class(train_dataloader, model)
+
+
+
+
+
+        # freq_time = time.time() - start_time
+        # logger['train_time'].append(freq_time)
 
         # samples = model.sample(batch_size=64)
         # save_image((x + 1.) * 0.5, './results_vae/orig.png')
@@ -373,23 +433,23 @@ if __name__ == '__main__':
         #                 save_image((samples + 1.) * 0.5, f'./results_vae/testsamples_{epoch}.png')
 
         # show_image(((samples + 1.) * 0.5).clamp(0., 1.))
-    save_logs(logger, "results_vae/log_new", str(1))
+    # save_logs(logger, "results_vae/log_new", str(1))
 
-if __name__ == '__main__':
-  _, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
-  with torch.no_grad():
-      with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
-          model.eval()
-          log_likelihood = 0.
-          num_samples = 0.
-          for batch in tepoch:
-              tepoch.set_description(f"Epoch: {epoch}")
-              imgs,_ = batch
-              batch_size = imgs.shape[0]
-              x = imgs.to(device)
-              log_likelihood += model.log_likelihood(x).sum()
-              num_samples += batch_size
-              tepoch.set_postfix(log_likelihood=log_likelihood / num_samples)
+# if __name__ == '__main__':
+#   _, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
+#   with torch.no_grad():
+#       with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
+#           model.eval()
+#           log_likelihood = 0.
+#           num_samples = 0.
+#           for batch in tepoch:
+#               tepoch.set_description(f"Epoch: {epoch}")
+#               imgs,_ = batch
+#               batch_size = imgs.shape[0]
+#               x = imgs.to(device)
+#               log_likelihood += model.log_likelihood(x).sum()
+#               num_samples += batch_size
+#               tepoch.set_postfix(log_likelihood=log_likelihood / num_samples)
 
 def interpolate(model, z_1, z_2, n_samples):
 

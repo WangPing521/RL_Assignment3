@@ -51,7 +51,7 @@ pred_dim=512
 
 # ablation experiments
 stop_gradient=True # (True or False)
-MLP_mode='no_pred_mlp' # None|'no_pred_mlp'|'fixed_random_init'
+MLP_mode ='no_pred_mlp' # None|'no_pred_mlp'|'fixed_random_init'
 
 # optimizer
 lr = 0.03
