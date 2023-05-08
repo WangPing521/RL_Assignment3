@@ -6,7 +6,7 @@ CC_WRAPPER_PATH="CC_wrapper.sh"
 
 source $CC_WRAPPER_PATH
 
-time=18
+time=4
 account=def-chdesa
 
 declare -a StringArray=(
