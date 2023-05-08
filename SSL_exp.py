@@ -432,7 +432,7 @@ for epoch in range(start_epoch, epochs):
     print('Val Epoch: [{}/{}] Val acc1:{:.2f}%'.format(epoch, epochs,np.array(acc2).mean() ))
     logger_c['val_top1'].append(np.array(acc2).mean())
 
-save_logs(logger, "results_ssl_withGrad/log_new_c", str(1))
+save_logs(logger_c, "results_ssl_withGrad/log_new_c", str(1))
 
 
 
