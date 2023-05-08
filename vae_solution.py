@@ -17,6 +17,9 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+from utils.func_tool import save_logs
+
+
 def fix_experiment_seed(seed=0):
   random.seed(seed)
   np.random.seed(seed)
@@ -347,30 +350,30 @@ if __name__ == '__main__':
         freq_time = time.time() - start_time
         logger['train_time'].append(freq_time)
 
-        samples = model.sample(batch_size=64)
-        save_image((x + 1.) * 0.5, './results_vae/orig.png')
-        save_image((recon + 1.) * 0.5, './results_vae/recon.png')
-        save_image((samples + 1.) * 0.5, f'./results_vae/samples_{epoch}.png')
+        # samples = model.sample(batch_size=64)
+        # save_image((x + 1.) * 0.5, './results_vae/orig.png')
+        # save_image((recon + 1.) * 0.5, './results_vae/recon.png')
+        # save_image((samples + 1.) * 0.5, f'./results_vae/samples_{epoch}.png')
 
-        if epoch % 5 == 0:
-            with torch.no_grad():
-                with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
-                    model.eval()
-                    log_likelihood = 0.
-                    num_samples = 0.
-                    for batch in tepoch:
-                        tepoch.set_description(f"Epoch: {epoch}")
-                        imgs, _ = batch
-                        batch_size = imgs.shape[0]
-                        x = imgs.to(device)
-                        recon, nll, kl = model(x)
-
-                        save_image((x + 1.) * 0.5, './results_vae/testorig.png')
-                        save_image((recon + 1.) * 0.5, './results_vae/testrecon.png')
-                        save_image((samples + 1.) * 0.5, f'./results_vae/testsamples_{epoch}.png')
+        # if epoch % 5 == 0:
+        #     with torch.no_grad():
+        #         with tqdm(test_dataloader, unit="batch", leave=True) as tepoch:
+        #             model.eval()
+        #             log_likelihood = 0.
+        #             num_samples = 0.
+        #             for batch in tepoch:
+        #                 tepoch.set_description(f"Epoch: {epoch}")
+        #                 imgs, _ = batch
+        #                 batch_size = imgs.shape[0]
+        #                 x = imgs.to(device)
+        #                 recon, nll, kl = model(x)
+        #
+        #                 save_image((x + 1.) * 0.5, './results_vae/testorig.png')
+        #                 save_image((recon + 1.) * 0.5, './results_vae/testrecon.png')
+        #                 save_image((samples + 1.) * 0.5, f'./results_vae/testsamples_{epoch}.png')
 
         # show_image(((samples + 1.) * 0.5).clamp(0., 1.))
-
+    save_logs(logger, "results_vae/log_new", str(1))
 
 if __name__ == '__main__':
   _, test_dataloader = get_dataloaders(data_root, batch_size=train_batch_size)
