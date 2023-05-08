@@ -30,7 +30,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # general
 seed = 2022
 num_workers = 2
-save_path1 = Path("./results_ssl_withoutGrad")
+save_path1 = Path("./results_ssl_stop_Grad_nomlp")
 save_path1.mkdir(exist_ok = True)
 save_path = "./results_ssl_stop_Grad_nomlp"
 resume = None # None or a path to a pretrained model (e.g. *.pth.tar')
@@ -46,7 +46,7 @@ arch = "resnet18"
 fix_pred_lr = True # fix the learning rate of the predictor network
 
 #Simsiam params
-dim=2048
+dim=2048 # 2048 | 4096
 pred_dim=512
 
 # ablation experiments
