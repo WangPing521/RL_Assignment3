@@ -22,15 +22,14 @@ import torch
 
 
 
-with open('../SSL_results/stopGrad_IdentityMLP/log_new/1/args.json', 'r') as f:
+with open('../SSL_results/SSL_FineTune_StopG_NoneMLP/log_new_c/1/args.json', 'r') as f:
     exp2 = json.load(f)
-train_loss = exp2['train_knn']
-
+train_acc = exp2['train_acc']
 # Plot the training curve
-plt.plot(train_loss, label='IdentityMLP_Predictor')
+plt.plot(train_acc, label='')
 
 plt.xlabel('Training epoch')
-plt.ylabel('Training knn')
+plt.ylabel('Train Acc.')
 
 # plt.legend()
 plt.show()
