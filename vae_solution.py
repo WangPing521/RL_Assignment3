@@ -88,7 +88,7 @@ def average_list(input_list):
 
 def save_bar(input, i):
     ff = []
-    [ff.append(i) for i in range(32)]
+    [ff.append(k) for k in range(32)]
     values = input
     fig = plt.figure(figsize=(10, 5))
     plt.bar(ff, values.detach().cpu(), color='blue', width=0.6)
@@ -121,21 +121,66 @@ def bar_plot_class(dataloader, model):
             [C7.append(latent_z[idx]) for idx in torch.where(label==7)[0]]
             [C8.append(latent_z[idx]) for idx in torch.where(label==8)[0]]
             [C9.append(latent_z[idx]) for idx in torch.where(label==9)[0]]
-            avg_0 = average_list(C0)
-            avg_1 = average_list(C1)
-            avg_2 = average_list(C2)
-            avg_3 = average_list(C3)
-            avg_4 = average_list(C4)
-            avg_5 = average_list(C5)
-            avg_6 = average_list(C6)
-            avg_7 = average_list(C7)
-            avg_8 = average_list(C8)
-            avg_9 = average_list(C9)
-            avg = [avg_0, avg_1, avg_2, avg_3, avg_4, avg_5, avg_6, avg_7, avg_8, avg_9]
-            i = 0
-            for c_avg in avg:
-                save_bar(c_avg, i)
-                i = i + 1
+            try:
+                avg_0 = average_list(C0)
+                i = 0
+                save_bar(avg_0, i)
+            except:
+                pass
+            try:
+                avg_1 = average_list(C1)
+                i = 1
+                save_bar(avg_1, i)
+            except:
+                pass
+            try:
+                avg_2 = average_list(C2)
+                i = 2
+                save_bar(avg_2, i)
+            except:
+                pass
+            try:
+                avg_3 = average_list(C3)
+                i = 3
+                save_bar(avg_3, i)
+            except:
+                pass
+            try:
+                avg_4 = average_list(C4)
+                i = 4
+                save_bar(avg_4, i)
+            except:
+                pass
+            try:
+                avg_5 = average_list(C5)
+                i = 5
+                save_bar(avg_5, i)
+            except:
+                pass
+            try:
+                avg_6 = average_list(C6)
+                i = 6
+                save_bar(avg_6, i)
+            except:
+                pass
+            try:
+                avg_7 = average_list(C7)
+                i = 7
+                save_bar(avg_7, i)
+            except:
+                pass
+            try:
+                avg_8 = average_list(C8)
+                i = 8
+                save_bar(avg_8, i)
+            except:
+                pass
+            try:
+                avg_9 = average_list(C9)
+                i = 9
+                save_bar(avg_9, i)
+            except:
+                pass
 
 class Encoder(nn.Module):
   def __init__(self, nc, nef, nz, isize, device):
@@ -400,7 +445,7 @@ if __name__ == '__main__':
               optimizer.step()
 
               tepoch.set_postfix(loss=loss.item())
-    train_batch_size = 128
+    train_batch_size = 64
     bar_plot_class(train_dataloader, model)
 
 
